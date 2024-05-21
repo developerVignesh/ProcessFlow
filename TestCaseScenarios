@@ -1,0 +1,83 @@
+Feature: Account Service
+
+Scenario 1: Retrieve Price Plan ID for Existing Smart Meter ID
+    Given a smart meter ID mapped to a price plan ID in the account service
+    When retrieving the price plan ID for an existing smart meter ID
+    Then the account service should return the corresponding price plan ID
+
+Scenarion 2: Retrieve Null Supplier for Unknown Smart Meter ID
+    Given a smart meter ID not mapped to any price plan ID in the account service
+    When retrieving the price plan ID for an unknown smart meter ID
+    Then the account service should return a null supplier
+
+
+Feature: Meter Reading Service
+
+Scenario 3: Retrieve Meter Readings for Non-Existing Meter ID
+    Given a Meter Reading Service
+    When retrieving readings for a non-existing meter ID
+    Then the service should return an empty list of electricity readings
+
+Scenario 4: Retrieve Meter Readings for Existing Meter ID
+    Given a Meter Reading Service
+    And electricity readings associated with the meter ID
+    When retrieving readings for an existing meter ID
+    Then the service should return the list of electricity readings
+
+Feature: Price Plan Service
+
+Scenario 5: Calculate Consumption Cost for Every Price Plan
+    Given a Price Plan Service
+    And meter readings for a specific meter ID
+    When calculating the cost for each price plan based on the meter readings
+    Then the service should return the consumption cost for each price plan as a dictionary
+
+Scenario 6: Recommend Cheapest Price Plans without Limit for Meter Usage
+    Given a Price Plan Service
+    And meter readings for a specific meter ID
+    When recommending the cheapest price plans without a limit based on the meter readings
+    Then the service should return the cheapest price plans as a dictionary
+
+Scenario 7: Recommend Limited Cheapest Price Plans for Meter Usage
+    Given a Price Plan Service
+    And meter readings for a specific meter ID
+    When recommending a limited number of cheapest price plans based on the meter readings
+    Then the service should return the limited cheapest price plans as a dictionary
+
+Scenario 8: Recommend Cheapest Price Plans when More than Limit Available for Meter Usage
+    Given a Price Plan Service
+    And meter readings for a specific meter ID
+    When recommending the cheapest price plans when more than the limit is available based on the meter readings
+    Then the service should return all available cheapest price plans
+
+Feature: Price Plan Comparison
+
+Scenario 9: Calculate Consumption Cost for Meter Readings
+    Given a Price Plan Comparison Controller
+    And meter readings associated with a specific meter ID
+    When calculating the consumption cost for each price plan based on the meter readings
+    Then the controller should return the consumption cost for each price plan as a dictionary
+
+Scenario 10: Recommend Cheapest Price Plans without Limit for Meter Usage
+    Given a Price Plan Comparison Controller
+    And meter readings associated with a specific meter ID
+    When recommending the cheapest price plans without a limit based on the meter readings
+    Then the controller should return the cheapest price plans as a dictionary
+
+Scenario 11: Recommend Limited Cheapest Price Plans for Meter Usage
+    Given a Price Plan Comparison Controller
+    And meter readings associated with a specific meter ID
+    When recommending a limited number of cheapest price plans based on the meter readings
+    Then the controller should return the limited cheapest price plans as a dictionary
+
+Scenario 12: Recommend Cheapest Price Plans when More than Limit Available for Meter Usage
+    Given a Price Plan Comparison Controller
+    And meter readings associated with a specific meter ID
+    When recommending the cheapest price plans when more than the limit is available based on the meter readings
+    Then the controller should return all available cheapest price plans
+
+Scenario: Handle No Matching Meter ID
+    Given a Price Plan Comparison Controller
+    When attempting to calculate consumption cost for a non-existing meter ID
+    Then the controller should return a Not Found status code
+

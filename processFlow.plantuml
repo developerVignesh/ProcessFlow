@@ -1,0 +1,72 @@
+@startuml
+
+actor User
+participant "MeterReadingController" as MeterController
+participant "PricePlanComparatorController" as PricePlanController
+participant "IAccountService" as AccountService
+participant "IPricePlanService" as PricePlanService
+participant "MeterReadingService" as MeterReadingService
+participant "MeterReadingServiceTest" as MeterReadingTest
+participant "PricePlanComparatorControllerTest" as PricePlanTest
+==package test cases ==
+    MeterReadingTest --> MeterReadingService: GivenMeterIdThatDoesNotExistShouldReturnNull()
+    MeterReadingService --> MeterReadingTest: Empty List<ElectricityReading>
+    
+    MeterReadingTest --> MeterReadingService: GivenMeterReadingThatExistsShouldReturnMeterReadings()
+    MeterReadingService --> MeterReadingTest: List<ElectricityReading>
+    
+    PricePlanTest --> PricePlanService: ShouldCalculateCostForMeterReadingsForEveryPricePlan()
+    PricePlanService --> PricePlanTest: Dictionary<string, decimal>
+    
+    PricePlanTest --> PricePlanService: ShouldRecommendCheapestPricePlansNoLimitForMeterUsage()
+    PricePlanService --> PricePlanTest: Dictionary<string, decimal>
+    
+    PricePlanTest --> PricePlanService: ShouldRecommendLimitedCheapestPricePlansForMeterUsage()
+    PricePlanService --> PricePlanTest: Dictionary<string, decimal>
+    
+    PricePlanTest --> PricePlanService: ShouldRecommendCheapestPricePlansMoreThanLimitAvailableForMeterUsage()
+    PricePlanService --> PricePlanTest: Dictionary<string, decimal>
+    
+    PricePlanTest --> PricePlanController: GivenNoMatchingMeterIdShouldReturnNotFound()
+    PricePlanController --> PricePlanTest: HTTP response
+== flow diagram ==
+
+User -> MeterController: HTTP POST /readings/store\n(body: MeterReadings)
+activate MeterController
+MeterController -> MeterService: StoreReadings(smartMeterId, electricityReadings)
+activate MeterService
+MeterService --> MeterController: Success/Failure response
+deactivate MeterService
+MeterController --> User: HTTP response (Success/Failure)
+
+User -> MeterController: HTTP GET /readings/read/{smartMeterId}
+activate MeterController
+MeterController -> MeterService: GetReadings(smartMeterId)
+activate MeterService
+MeterService --> MeterController: List<ElectricityReading>
+deactivate MeterService
+MeterController --> User: HTTP response (List<ElectricityReading>)
+
+User -> PricePlanController: HTTP GET /price-plans/compare-all/{smartMeterId}
+activate PricePlanController
+PricePlanController -> AccountService: GetPricePlanIdForSmartMeterId(smartMeterId)
+activate AccountService
+AccountService --> PricePlanController: Supplier pricePlanId
+deactivate AccountService
+PricePlanController -> PricePlanService: GetConsumptionCostOfElectricityReadingsForEachPricePlan(smartMeterId)
+activate PricePlanService
+PricePlanService --> PricePlanController: Dictionary<string, decimal> costPerPricePlan
+deactivate PricePlanService
+PricePlanController --> User: HTTP response
+
+User -> PricePlanController: HTTP GET /price-plans/recommend/{smartMeterId}?limit={limit}
+activate PricePlanController
+PricePlanController -> PricePlanService: GetConsumptionCostOfElectricityReadingsForEachPricePlan(smartMeterId)
+activate PricePlanService
+PricePlanService --> PricePlanController: Dictionary<string, decimal> consumptionForPricePlans
+deactivate PricePlanService
+PricePlanController -> PricePlanController: Order consumptionForPricePlans by value
+PricePlanController -> PricePlanController: Take 'limit' number of recommendations (if provided)
+PricePlanController --> User: HTTP response
+
+@enduml

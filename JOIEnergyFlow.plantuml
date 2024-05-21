@@ -1,0 +1,37 @@
+@startuml
+
+class ElectricityReading {
+    DateTime Time
+    Decimal Reading
+}
+
+class MeterReadings {
+    string SmartMeterId
+    List<ElectricityReading> ElectricityReadings
+}
+
+class PricePlan {
+    DayOfWeek DayOfWeek
+    decimal Multiplier
+}
+
+enum Supplier {
+    DrEvilsDarkEnergy
+    TheGreenEco
+    PowerForEveryone
+    NullSupplier
+}
+
+class PricePlan {
+    Supplier EnergySupplier
+    decimal UnitRate
+    IList<PeakTimeMultiplier> PeakTimeMultiplier
+}
+
+MeterReadings "1" -- "0..*" ElectricityReading : contains
+PricePlan "1" -- "1" Supplier : uses
+PricePlan "1" -- "0..*" PeakTimeMultiplier : uses
+
+PricePlan -- MeterReadings : include
+
+@enduml

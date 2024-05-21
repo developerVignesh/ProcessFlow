@@ -1,0 +1,86 @@
+@startuml
+
+Title JOIMETER
+
+package Domain {
+    +class ElectricityReading {
+        DateTime:Time
+        ..
+        Decimal:Reading
+        ..
+    }
+
+    +class MeterReadings {
+        string:SmartMeterId
+        ..
+        List<ElectricityReading>:ElectricityReadings
+        ..
+    }
+
+    +class PricePlan {
+        Supplier:EnergySupplier
+        ..
+        decimal:UnitPrice
+        --
+        IList<PeakTimeMultiplier>:PeakTimeMultiplier
+        --
+        +decimal GetPrice(DateTime datetime)
+    }
+
+    enum Supplier {
+        DrEvilsDarkEnergy
+        ..
+        TheGreenEco
+        ..
+        PowerForEveryone
+        ..
+        NullSupplier
+        ..
+    }
+
+    +class PeakTimeMultiplier {
+        DayOfWeek:DayOfWeek
+        --
+        decimal:Multiplier 
+    }
+}
+
+package Generator {
+    +class ElectricityReadingGenerator {
+        List<ElectricityReading>:Generate(int number)
+    }
+}
+
+package Service {
+    +class AccountService<extends IAccountService> {
+        constructor AccountService(Dictionary<string, Supplier> smartMeterToPricePlanAccounts);
+    }
+    +interface IAccountService {
+        Supplier GetPricePlanIdForSmartMeterId(string smartMeterId);
+    }
+    +class MeterReadingService<extends IMeterReadingService> {
+        constructor MeterReadingService(Dictionary<string, List<ElectricityReading>> meterAssociatedReadings);
+    }
+    
+    interface IMeterReadingService {
+        List<ElectricityReading> GetReadings(string smartMeterId);
+        void StoreReadings(string smartMeterId, List<ElectricityReading> electricityReadings);
+    }
+
+    class PricePlanService<extends IPricePlanService> {
+        constructor PricePlanService(List<PricePlan> pricePlan, IMeterReadingService meterReadingService);
+    }
+
+    interface IPricePlanService {
+        Dictionary<string, decimal> GetConsumptionCostOfElectricityReadingsForEachPricePlan(string smartMeterId);
+    }
+}
+
+ElectricityReading <|-- MeterReadings
+PricePlan <|-- PeakTimeMultiplier
+PricePlan <|-- Supplier
+AccountService <|-- IAccountService
+MeterReadingService <|-- IMeterReadingService
+PricePlanService  <|-- IPricePlanService
+
+@enduml
